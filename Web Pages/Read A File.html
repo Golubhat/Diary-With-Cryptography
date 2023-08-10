@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Read A File</title>
+    <link rel="stylesheet" href="appearance.css">
+</head>
+<body>
+    <ol>
+        <li>
+            Enter the name & password of file you want to read<br>Then this page will display "Choose File" input & "Read" button
+        </li>
+        <br>
+        <li>
+            Choose a file which has your name & password, through "Choose File" input
+        </li>
+        <br>
+        <li>
+            Click on "Read" button to read the file in the above input<br>If both name & password of the file are correct, then it will display the Data
+        </li>
+        <br>
+        <li>
+            The Data includes title of your note & the text in it!!!
+        </li>
+    </ol>
+    <button onclick="NamePassword()">Click To Start</button>
+    <br><br>
+    <a href="Diary.html">Go Back</a>
+</body>
+<script src="encryption code.js"></script>
+<script>
+    function NamePassword() {
+        document.body.innerHTML = "";
+        document.body.style = "padding: 20px;";
+
+        let form = document.createElement("form");
+        form.method = "get";
+        form.innerHTML = '<label>Enter Name: </label><input type="text"/><br><br>';
+        form.innerHTML += '<label>Enter Password: </label><input type="password"/><br><br>';
+        form.innerHTML += '<input type="button" value="Submit" onclick="ReadAFile(this.form)"></form><br><br>';
+        document.body.appendChild(form);
+
+        let goBack = document.createElement("a");
+        goBack.href = "Diary.html";
+        goBack.innerText = "Go Back";
+        document.body.appendChild(goBack);
+    }
+
+    function ReadAFile(someForm) {
+        document.body.innerHTML = "";
+        document.body.style = "padding: 20px;";
+
+        let file = document.createElement("input");
+        file.type = "file";
+        file.id = "file";
+        document.body.appendChild(file);
+
+        document.body.appendChild(document.createElement("br"));
+        document.body.appendChild(document.createElement("br"));
+
+        let read_file = document.createElement("button");
+        read_file.id = "read_file";
+        read_file.innerText = "Read";
+        document.body.appendChild(read_file);
+
+        let message = document.createElement("p");
+        message.style = "text-align: center; font-family: Arial, Helvetica, sans-serif; word-wrap: break-word;";
+        document.body.appendChild(message);
+        let title = message;
+
+        let text = document.createElement("p");
+        text.style = "font-family: Arial, Helvetica, sans-serif; word-wrap: break-word;";
+        document.body.appendChild(text);
+        
+        document.body.appendChild(document.createElement("br"));
+        document.body.appendChild(document.createElement("br"));
+
+        let goBack = document.createElement("a");
+        goBack.href = "Diary.html";
+        goBack.innerText = "Go Back";
+        document.body.appendChild(goBack);
+        
+        let name = someForm.elements[0].value;
+        let pass = someForm.elements[1].value;
+
+        document.querySelector("#read_file").addEventListener('click', function() {
+	    // no file selected to read
+	    if(document.querySelector("#file").value == '') {
+	    	return;
+	    }
+    	var file = document.querySelector("#file").files[0];
+	    var reader = new FileReader();
+        reader.readAsBinaryString(file);
+	    reader.onload = function(e) {
+	        	// binary data
+                let rawData = e.target.result.split(",");
+                let Data="";
+                for(let i=0;i<rawData.length;i++)
+                {
+                    let ascii = Number(rawData[i])-encrypt[i%256];
+                    Data = Data.concat(String.fromCharCode(ascii));
+                }
+                Data = Data.split("THIS_IS_THE_ENDLINE");
+                if(name===Data[0] && pass===Data[1])
+                {
+                    title.innerText = Data[2];
+                    text.innerText = Data[3];
+                }
+                else
+                    message.innerText = "Username or/and Password is Wrong...";
+	        };
+	        reader.onerror = function(e) {
+	    	    // error occurred
+	    	    message.innerText = "Error : " + e.type;
+	        };
+        });
+    }
+</script>
+</html>
