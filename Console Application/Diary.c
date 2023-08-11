@@ -1,13 +1,14 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#include<unistd.h>
+#include<conio.h>
 #include<time.h>
+#include<unistd.h>
 #include"encryption code.h"
 
 FILE *fptr;
 int i,len;
-char ch,*new,choice;
+char ch,choice;
 enum Decision
 {
     ENCRYPT = 1,
@@ -191,12 +192,12 @@ void changecolour()
 struct DiaryUser
 {
     int ID;
-    char username[20];
-    char password[20];
+    char username[21];
+    char password[21];
     int amount_of_content;
 }
 User;
-char *title,*text;
+char *title,*text,*new;
 int position;
 void Display(char DiaryUserFileName[])
 {
@@ -547,12 +548,40 @@ void UserMenu(char DiaryUserFileName[])
 
     printf("Bye Bye!!!\n");
 }
+
+void setPassword(char thePassword[])
+{
+    i = 0;
+    while((ch = getch()) != 13)    // 13 is ASCII value of Enter key
+    {
+        if(ch == 8)                // 8 is ASCII value of Backspace key
+        {
+            if(i > 0)
+            {
+                putch('\b');
+                putch(' ');
+                putch('\b');
+                i--;
+            }
+        }
+        else
+        {
+            if(i < 20)
+            {
+                thePassword[i++] = ch;
+                putch('*');
+            }
+        }
+    }
+    thePassword[i] = '\0';
+    printf("\n");
+}
 int ID_Verification(char DiaryUserFileName[])
 {
             system("cls");
             char *idString;
             int flag;
-            char user[20],pass[20];
+            char user[21],pass[21];
             do
             {
                 flag = 1;
@@ -580,7 +609,7 @@ int ID_Verification(char DiaryUserFileName[])
             printf("Enter Name: ");
             scanf(" %20[^\n]s",user);
             printf("Enter Password: ");
-            scanf(" %20[^\n]s",pass);
+            setPassword(pass);
 
             FILE *ptr = fopen("settings.dat","rb");
             fread(&settings.no_of_user,sizeof(settings.no_of_user),1,ptr);
@@ -627,7 +656,7 @@ int ID_Verification(char DiaryUserFileName[])
 int main()
 {
     char DiaryUserFileName[10];
-    int choice,flag;
+    int flag;
     initialize();
     do
     {
@@ -644,16 +673,16 @@ int main()
          }
          else if(choice=='2')
          {
-             char re_enter[20];
+             char re_enter[21];
              while(1)
              {
               system("cls");
               printf("Enter new Name: (max. 20 char.) ");
               scanf(" %20[^\n]s",User.username);
               printf("Enter new Password: (max. 20 char.) ");
-              scanf(" %20[^\n]s",User.password);
+              setPassword(User.password);
               printf("Re-Enter Password: ");
-              scanf(" %20[^\n]s",re_enter);
+              setPassword(re_enter);
               if(strcmp(User.password,re_enter)!=0)
               {
                 printf("Passwords do not match...\n");
