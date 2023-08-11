@@ -60,6 +60,11 @@ void Backup(char fileName[],enum Decision choice)
     if(choice==REMOVE_THE_BACKUP_FILE)
         remove(FileInBackup);
 }
+void delay(unsigned int mseconds)
+{
+    clock_t goal = mseconds + clock();
+    while (goal > clock());
+}
 
 struct DiarySettings
 {
@@ -372,8 +377,12 @@ void UserMenu(char DiaryUserFileName[])
     {
         system("cls");
         printf("\t\t\tHello %s :)\n\n",User.username);
-        printf("1) Write a Note\n2) Append in Note\n3) Read a Note\n4) Remove a Note\n5) Change Username/Password\n6) Log Out\n\n");
-        scanf(" %c",&choice);
+        printf("1) Write a Note\n2) Append in Note\n3) Read a Note\n4) Remove a Note\n5) Change Username/Password\n6) Log Out\n\nChoose from 1 to 6: ");
+        choice = getch();
+        putch(choice);
+        delay(100);
+        printf("\n");
+        
         if(choice=='1')
         {
             system("cls");
@@ -662,8 +671,12 @@ int main()
     {
          system("cls");
          printf("\t\t\t\t\t\tWELCOME TO DIARY!!!!!\n\n");
-         printf("1) Log In\n2) Register a User\n3) Change Console Colour\n4) Delete a User\n5) Quit\n\n");
-         scanf(" %c",&choice);
+         printf("1) Log In\n2) Register a User\n3) Change Console Colour\n4) Delete a User\n5) Quit\n\nChoose from 1 to 5: ");
+         choice = getch();
+         putch(choice);
+         delay(100);
+         printf("\n");
+
          if(choice=='1')
          {
             flag = ID_Verification(DiaryUserFileName);
