@@ -20,28 +20,25 @@ enum Decision
 void Encryption(char fileName[],enum Decision direction)
 {
     fptr = fopen(fileName,"rb+");
-    if(fptr!=NULL)
+    fseek(fptr,0,SEEK_END);
+    int length = ftell(fptr);
+    for(i=0;i<length;i++)
     {
-        fseek(fptr,0,SEEK_END);
-        int length = ftell(fptr);
-        for(i=0;i<length;i++)
-        {
-            fseek(fptr,i,SEEK_SET);
-            fread(&ch,sizeof(char),1,fptr);
-            ch += direction*encrypt[i%256];
-            fseek(fptr,i,SEEK_SET);
-            fwrite(&ch,sizeof(char),1,fptr);
-        }
-        fclose(fptr);
+        fseek(fptr,i,SEEK_SET);
+        fread(&ch,sizeof(char),1,fptr);
+        ch += direction*encrypt[i%256];
+        fseek(fptr,i,SEEK_SET);
+        fwrite(&ch,sizeof(char),1,fptr);
     }
+    fclose(fptr);
 }
 void Backup(char fileName[],enum Decision choice)
 {
-    char FileInBackup[20] = {"Backup//"};
-    strcat(FileInBackup,fileName);
+    char fileInBackup[20] = {"Backup//"};
+    strcat(fileInBackup,fileName);
     if(choice==MAKE_THE_BACKUP_FILE)
     {
-        FILE *write = fopen(FileInBackup,"wb");
+        FILE *write = fopen(fileInBackup,"wb");
         FILE *read = fopen(fileName,"rb");
         fseek(read,0,SEEK_END);
         int length = ftell(read);
@@ -55,10 +52,10 @@ void Backup(char fileName[],enum Decision choice)
         fclose(write);
         fclose(read);
 
-        Encryption(FileInBackup,ENCRYPT);
+        Encryption(fileInBackup,ENCRYPT);
     }
     if(choice==REMOVE_THE_BACKUP_FILE)
-        remove(FileInBackup);
+        remove(fileInBackup);
 }
 void delay(unsigned int mseconds)
 {
@@ -75,20 +72,23 @@ settings;
 void initialize()
 {
     mkdir("Backup");
-    if(fopen("settings.dat","rb")!=NULL)
-    {
-        Encryption("settings.dat",DECRYPT);
-        fptr = fopen("settings.dat","rb");
-        fread(&settings.no_of_user,sizeof(settings.no_of_user),1,fptr);
-        fread(&settings.color,sizeof(settings.color),1,fptr);
-    }
-    else
+    fptr = fopen("settings.dat","rb");
+    if(fptr==NULL)
     {
         settings.no_of_user = 0;
         strcpy(settings.color,"07");
         fptr = fopen("settings.dat","wb");
         fwrite(&settings.no_of_user,sizeof(settings.no_of_user),1,fptr);
-        fwrite(&settings.color,sizeof(settings.color),1,fptr);
+        fwrite(&settings.color,sizeof(settings.color),1,fptr);        
+    }
+    else
+    {
+        fclose(fptr);
+        Encryption("settings.dat",DECRYPT);
+        
+        fptr = fopen("settings.dat","rb");
+        fread(&settings.no_of_user,sizeof(settings.no_of_user),1,fptr);
+        fread(&settings.color,sizeof(settings.color),1,fptr);
     }
     fclose(fptr);
     Backup("settings.dat",MAKE_THE_BACKUP_FILE);
@@ -138,8 +138,8 @@ int IDgenerate()
 }
 void DeleteUser(char DiaryUserFileName[])
 {
-    settings.no_of_user--;
     remove(DiaryUserFileName);
+    settings.no_of_user--;
     fptr = fopen("settings.dat","rb+");
     fwrite(&settings.no_of_user,sizeof(settings.no_of_user),1,fptr);
     int id = 0;
@@ -587,85 +587,67 @@ void setPassword(char thePassword[])
 }
 int ID_Verification(char DiaryUserFileName[])
 {
-            system("cls");
-            char *idString;
-            int flag;
-            char user[21],pass[21];
-            do
-            {
-                flag = 1;
-                printf("Enter ID: ");
-                scanf(" %as",&idString);
-                for(i=0;i<5;i++)
-                {
-                   if( !(idString[i]-48 >=0 && idString[i]-48 <=9) || strlen(idString)>5 )
-                   {
-                       flag = 0;
-                       printf("It must contain 5 exact numbers...\n");
-                       break;
-                   }
-                }
-            }
-            while(flag==0);
+    system("cls");
+    char *idString;
+    int flag;
+    char user[21],pass[21];
+    do
+    {
+        flag = 1;
+        printf("Enter ID: ");
+        scanf(" %as",&idString);
+        for(i=0;i<5;i++)
+        {
+           if( !(idString[i]-48 >=0 && idString[i]-48 <=9) || strlen(idString)>5 )
+           {
+               flag = 0;
+               printf("It must contain 5 exact numbers...\n");
+               break;
+           }
+        }
+    }
+    while(flag==0);
+    
+    strcpy(DiaryUserFileName,idString);
+    strcat(DiaryUserFileName,".dat");  
+    fptr = fopen(DiaryUserFileName,"rb");
+    if(fptr==NULL)
+    {
+        printf("ID doesn't exist...\n");
+        return 0;       
+    }
+    else
+        fclose(fptr);
 
-            int id = 0;
-            for(i=0;i<5;i++)
-            {
-                id *= 10;
-                id += idString[i]-48;
-            }
+    printf("Enter Name: ");
+    scanf(" %20[^\n]s",user);
+    printf("Enter Password: ");
+    setPassword(pass);
 
-            printf("Enter Name: ");
-            scanf(" %20[^\n]s",user);
-            printf("Enter Password: ");
-            setPassword(pass);
-
-            FILE *ptr = fopen("settings.dat","rb");
-            fread(&settings.no_of_user,sizeof(settings.no_of_user),1,ptr);
-            fseek(ptr,sizeof(settings.no_of_user)+sizeof(settings.color),SEEK_SET);
-            for(i=1;i<=settings.no_of_user;i++)
-            {
-                fread(&User.ID,sizeof(int),1,ptr);
-                if(id==User.ID)
-                {
-                    fclose(ptr);
-                    sprintf(DiaryUserFileName,"%d",User.ID);
-                    strcat(DiaryUserFileName,".dat");
-                    
-                    Encryption(DiaryUserFileName,DECRYPT);
-                    fptr = fopen(DiaryUserFileName,"rb");
-                    fseek(fptr,sizeof(User.ID),SEEK_SET);
-                    fread(&User.username,sizeof(User.username),1,fptr);
-                    fread(&User.password,sizeof(User.password),1,fptr);
-                    fread(&User.amount_of_content,sizeof(User.amount_of_content),1,fptr);
-                    fclose(fptr);
-                    Encryption(DiaryUserFileName,ENCRYPT);
-
-                    if(strcmp(User.username,user)!=0)
-                    {
-                        printf("Invalid Username...\n");
-                        return 0;
-                    }
-                    if(strcmp(User.password,pass)!=0)
-                    {
-                        printf("Invalid Password...\n");
-                        return 0;
-                    }
-                    else
-                        return 1;
-                    break;
-                }
-                fseek(ptr,sizeof(settings.no_of_user)+sizeof(settings.color)+i*sizeof(int),SEEK_SET);
-            }
-            fclose(ptr);
-            printf("ID doesn't exist...\n");
-            return 0;
+    Encryption(DiaryUserFileName,DECRYPT);
+    fptr = fopen(DiaryUserFileName,"rb");
+    fseek(fptr,sizeof(User.ID),SEEK_SET);
+    fread(&User.username,sizeof(User.username),1,fptr);
+    fread(&User.password,sizeof(User.password),1,fptr);
+    fclose(fptr);
+    Encryption(DiaryUserFileName,ENCRYPT);
+    if(strcmp(User.username,user)!=0)
+    {
+        printf("Invalid Username...\n");
+        return 0;
+    }
+    if(strcmp(User.password,pass)!=0)
+    {
+        printf("Invalid Password...\n");
+        return 0;
+    }
+    else
+        return 1;
 }
 
 int main()
 {
     char DiaryUserFileName[10];
-    int flag;
     initialize();
     do
     {
@@ -679,8 +661,7 @@ int main()
 
          if(choice=='1')
          {
-            flag = ID_Verification(DiaryUserFileName);
-            if(flag==1)
+            if(ID_Verification(DiaryUserFileName)==1)
                 UserMenu(DiaryUserFileName);
             system("pause");
          }
@@ -742,14 +723,10 @@ int main()
          }
          if(choice=='4')
          {
-            flag = ID_Verification(DiaryUserFileName);
-            if(flag==1)
+            if(ID_Verification(DiaryUserFileName)==1)
             {
                 DeleteUser(DiaryUserFileName);
-                char FileInBackup[20] = {"Backup//"};
-                strcat(FileInBackup,DiaryUserFileName);
-                remove(FileInBackup);
-
+                Backup(DiaryUserFileName,REMOVE_THE_BACKUP_FILE);
                 printf("User Deleted!!!\n");
             }
             system("pause");
