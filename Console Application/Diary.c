@@ -4,7 +4,8 @@
 #include <conio.h>
 #include <time.h>
 #include <unistd.h>
-#include "encryption code.h"
+
+short int encryptSettings[256];
 short int encryptionCode[256];
 void clear_encryptionCode(short int encryptionCode[])
 {
@@ -105,6 +106,10 @@ struct DiarySettings
 } settings;
 void initialize()
 {
+    fptr = fopen("Encryption Code.dat", "rb");
+    fread(&encryptSettings, sizeof(encryptSettings), 1, fptr);
+    fclose(fptr);
+
     mkdir("Backup");
     fptr = fopen("settings.dat", "rb");
     if (fptr == NULL)
