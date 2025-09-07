@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🔐 Crypto Toolkit - Key / Encrypt / Decrypt</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+      padding: 40px;
+      color: #222;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #004d40;
+    }
+
+    .section {
+      background: #ffffffdd;
+      border-radius: 12px;
+      padding: 30px;
+      margin: 30px auto;
+      max-width: 800px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    }
+
+    label, p {
+      font-weight: 500;
+      margin-top: 10px;
+    }
+
+    input[type="file"] {
+      margin: 10px 0;
+      padding: 5px;
+    }
+
+    button {
+      background: #009688;
+      color: white;
+      padding: 12px 25px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #00695c;
+    }
+
+    #status {
+      font-weight: bold;
+      color: #2e7d32;
+      margin-top: 15px;
+    }
+
+    .note {
+      color: #888;
+      font-size: 14px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #00695c;
+    }
+
+    hr {
+      margin-top: 40px;
+      border: 0;
+      border-top: 2px dashed #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔐 Secure File Crypto Toolkit</h1>
+  <p style="text-align:center;">Create a key, then encrypt or decrypt files safely in your browser!</p>
+
+  <!-- Key Generator -->
+  <div class="section">
+    <div class="section-title">1️⃣ Create Key File</div>
+    <p>Click the button below to generate a random <code>key.dat</code> file.</p>
+    <button onclick="createKey()">Generate key.dat</button>
+    <div id="status-key"></div>
+  </div>
+
+  <!-- Encryptor -->
+  <div class="section">
+    <div class="section-title">2️⃣ Encrypt File</div>
+    <p><strong>Step 1:</strong> Choose any file to encrypt:</p>
+    <input type="file" id="inputFile"><br>
+
+    <p><strong>Step 2:</strong> Select your <code>key.dat</code>:</p>
+    <input type="file" id="keyFileEncrypt" accept=".dat"><br>
+
+    <button onclick="encrypt()">Encrypt File</button>
+    <div id="status-encrypt"></div>
+  </div>
+
+  <!-- Decryptor -->
+  <div class="section">
+    <div class="section-title">3️⃣ Decrypt File</div>
+    <p><strong>Step 1:</strong> Select encrypted <code>.enc</code> file:</p>
+    <input type="file" id="encFile" accept=".enc"><br>
+
+    <p><strong>Step 2:</strong> Select your <code>key.dat</code> file:</p>
+    <input type="file" id="keyFileDecrypt" accept=".dat"><br>
+
+    <button onclick="decrypt()">Decrypt File</button>
+    <div id="status-decrypt"></div>
+  </div>
+
+  <hr>
+  <p class="note" style="text-align:center;">Note: All processing is done locally in your browser — no files are uploaded anywhere. ✅</p>
+
+  <script>
+    const MAGIC_HEADER = "ENC1";
+
+    function createKey() {
+      const key = Array.from({length: 256}, (_, i) => i);
+      for (let i = 255; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [key[i], key[j]] = [key[j], key[i]];
+      }
+      const blob = new Blob([new Uint8Array(key)], { type: "application/octet-stream" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "key.dat";
+      a.click();
+      document.getElementById("status-key").textContent = "✅ key.dat file created and downloaded.";
+    }
+
+    function encrypt() {
+      const inputFile = document.getElementById("inputFile").files[0];
+      const keyFile = document.getElementById("keyFileEncrypt").files[0];
+
+      if (!inputFile || !keyFile) {
+        alert("Please select both an input file and a key file.");
+        return;
+      }
+
+      const readerKey = new FileReader();
+      readerKey.onload = () => {
+        const key = new Uint8Array(readerKey.result);
+        if (key.length !== 256) {
+          alert("Invalid key file.");
+          return;
+        }
+
+        const readerInput = new FileReader();
+        readerInput.onload = () => {
+          const inputData = new Uint8Array(readerInput.result);
+          const header = new TextDecoder().decode(inputData.slice(0, 4));
+          if (header === MAGIC_HEADER) {
+            alert("File is already encrypted.");
+            return;
+          }
+
+          const output = new Uint8Array(inputData.length + 4);
+          for (let i = 0; i < 4; i++) output[i] = MAGIC_HEADER.charCodeAt(i);
+          for (let i = 0; i < inputData.length; i++)
+            output[i + 4] = (inputData[i] + key[i % 256]) % 256;
+
+          const blob = new Blob([output]);
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = inputFile.name + ".enc";
+          a.click();
+          document.getElementById("status-encrypt").textContent = "✅ File encrypted and downloaded as " + a.download;
+        };
+        readerInput.readAsArrayBuffer(inputFile);
+      };
+      readerKey.readAsArrayBuffer(keyFile);
+    }
+
+    function decrypt() {
+      const encFile = document.getElementById("encFile").files[0];
+      const keyFile = document.getElementById("keyFileDecrypt").files[0];
+
+      if (!encFile || !keyFile) {
+        alert("Please select both the encrypted file and key.");
+        return;
+      }
+
+      const readerKey = new FileReader();
+      readerKey.onload = () => {
+        const key = new Uint8Array(readerKey.result);
+        if (key.length !== 256) {
+          alert("Invalid key file.");
+          return;
+        }
+
+        const readerEnc = new FileReader();
+        readerEnc.onload = () => {
+          const data = new Uint8Array(readerEnc.result);
+          const header = new TextDecoder().decode(data.slice(0, 4));
+          if (header !== MAGIC_HEADER) {
+            alert("This file is not encrypted or has invalid header.");
+            return;
+          }
+
+          const decrypted = new Uint8Array(data.length - 4);
+          for (let i = 0; i < decrypted.length; i++)
+            decrypted[i] = (data[i + 4] - key[i % 256] + 256) % 256;
+
+          const originalName = encFile.name.replace(/\.enc$/, "") || "decrypted_output";
+          const blob = new Blob([decrypted]);
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = originalName;
+          a.click();
+          document.getElementById("status-decrypt").textContent = "✅ File decrypted and downloaded as " + a.download;
+        };
+        readerEnc.readAsArrayBuffer(encFile);
+      };
+      readerKey.readAsArrayBuffer(keyFile);
+    }
+  </script>
+</body>
+</html>
