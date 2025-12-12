@@ -3,10 +3,11 @@ from tkinter import filedialog, messagebox
 import os
 
 # --- CONFIG ---
-KEY_SIZE = 1_000_000   # 1,000,000 bytes
+KEY_SIZE = 256
 KEY_FILENAME = "key.dat"
 MAGIC_HEADER = b"ENC1"
 CHUNK_SIZE = 64 * 1024  # 64 KB chunk size for streaming
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # --- Key creation ---
 
@@ -15,7 +16,7 @@ def create_key():
     try:
         # os.urandom gives uniformly random bytes 0-255
         key_bytes = os.urandom(KEY_SIZE)
-        with open(KEY_FILENAME, "wb") as f:
+        with open(os.path.join(SCRIPT_DIR, KEY_FILENAME), "wb") as f:
             f.write(key_bytes)
         messagebox.showinfo(
             "Key Created", f"{KEY_FILENAME} has been created ({KEY_SIZE} bytes).")
@@ -36,7 +37,7 @@ def encrypt_file():
         return
 
     try:
-        with open(KEY_FILENAME, "rb") as f:
+        with open(os.path.join(SCRIPT_DIR, KEY_FILENAME), "rb") as f:
             key = f.read()
     except Exception as e:
         messagebox.showerror("Error", f"Failed to read key: {e}")
@@ -58,7 +59,8 @@ def encrypt_file():
             # rewind to beginning for full streaming
             fin.seek(0)
 
-            output_path = input_path + ".enc"
+            output_path = os.path.join(
+                SCRIPT_DIR, os.path.basename(input_path) + ".enc")
             with open(output_path, "wb") as fout:
                 fout.write(MAGIC_HEADER)  # write header
 
@@ -73,15 +75,6 @@ def encrypt_file():
                         out[i] = (b + key[(pos + i) % KEY_SIZE]) % 256
                     fout.write(out)
                     pos += len(chunk)
-
-        # optionally remove original
-        try:
-            os.remove(input_path)
-        except Exception:
-            # ignore removal errors but inform the user
-            messagebox.showinfo(
-                "Encrypted", f"Encrypted to: {output_path}\n(Original not removed.)")
-            return
 
         messagebox.showinfo("Encryption Complete",
                             f"Encrypted to: {output_path}")
@@ -104,7 +97,7 @@ def decrypt_file():
         return
 
     try:
-        with open(KEY_FILENAME, "rb") as f:
+        with open(os.path.join(SCRIPT_DIR, KEY_FILENAME), "rb") as f:
             key = f.read()
     except Exception as e:
         messagebox.showerror("Error", f"Failed to read key: {e}")
@@ -123,7 +116,9 @@ def decrypt_file():
                     "Not Encrypted", "This file does not have a valid encryption header.")
                 return
 
-            output_path = input_path.replace(".enc", "")
+            original_name = os.path.basename(input_path).replace(".enc", "")
+            output_path = os.path.join(SCRIPT_DIR, original_name)
+            
             with open(output_path, "wb") as fout:
                 pos = 0
                 while True:
@@ -135,14 +130,6 @@ def decrypt_file():
                         out[i] = (b - key[(pos + i) % KEY_SIZE] + 256) % 256
                     fout.write(out)
                     pos += len(chunk)
-
-        # optionally remove encrypted file
-        try:
-            os.remove(input_path)
-        except Exception:
-            messagebox.showinfo(
-                "Decrypted", f"Decrypted to: {output_path}\n(Encrypted file not removed.)")
-            return
 
         messagebox.showinfo("Decryption Complete",
                             f"Decrypted to: {output_path}")
