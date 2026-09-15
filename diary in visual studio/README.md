@@ -10,7 +10,7 @@ The project is built directly as a Visual Studio C++ project.
 
 Install:
 
-- Visual Studio 2022
+- Visual Studio
 - **Desktop development with C++** workload
 - MSVC C++ build tools
 - Windows SDK
@@ -49,7 +49,7 @@ Do not mix incompatible:
 
 If a Visual Studio solution already exists:
 
-1. Start **Visual Studio 2022**.
+1. Start **Visual Studio**.
 2. Select:
 
 
@@ -151,8 +151,6 @@ Diary.manifest
 
 # Important: DiaryApp.cpp Is the Entry Point
 
-The application does **not** use a separate `main.cpp`.
-
 The wxWidgets entry point is in:
 
 
@@ -167,8 +165,6 @@ wxIMPLEMENT_APP(DiaryApp);
 
 Therefore:
 
-- Do not create another `main.cpp`.
-- Do not add a separate `main()` function.
 - Make sure `DiaryApp.cpp` is included in the Visual Studio project.
 
 ---
@@ -533,28 +529,6 @@ This is particularly useful after changing:
 
 ---
 
-# Common Problems
-
-## `unresolved external symbol main`
-
-Check that:
-
-
-DiaryApp.cpp
-
-
-is included in the project and contains:
-
-
-wxIMPLEMENT_APP(DiaryApp);
-
-
-Do not create a second `main.cpp`.
-
-Also verify that the project is configured as a Windows GUI application where appropriate.
-
----
-
 ## `cannot open file 'wx/...'`
 
 The wxWidgets include directory is missing.
@@ -631,47 +605,6 @@ Do not mix:
 Diary: x64
 wxWidgets: x86
 
-
----
-
-# Source Submission
-
-For a source-code submission, include the source and project configuration files required to rebuild the application.
-
-Typically include:
-
-
-Diary.sln
-Diary.vcxproj
-
-src/
-    *.h
-    *.cpp
-    *.manifest
-
-
-Also include any required project/resource files.
-
-Do not normally include:
-
-
-x64/
-Debug/
-Release/
-build/
-.vs/
-*.user
-
-
-or generated runtime data such as:
-
-
-settings.dat
-Encryption Code.dat
-
-
-unless the submission requirements specifically ask for them.
-
 ---
 
 # Summary
@@ -679,7 +612,7 @@ unless the submission requirements specifically ask for them.
 The basic Visual Studio workflow is:
 
 
-1. Install Visual Studio 2022
+1. Install Visual Studio
           ↓
 2. Install Desktop development with C++
           ↓
