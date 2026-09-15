@@ -1,6 +1,6 @@
 # Diary Application — Visual Studio Build Guide
 
-This guide explains how to build and run the **Diary** C++ wxWidgets application using **Visual Studio 2022**, **without CMake**.
+This guide explains how to build and run the **Diary** C++ wxWidgets application using **Visual Studio**, **without CMake**.
 
 The project is built directly as a Visual Studio C++ project.
 
@@ -86,7 +86,7 @@ Empty Project
 4. Name it:
 
 
-Diary
+Diary_Project
 
 
 5. Create the project.
@@ -102,7 +102,7 @@ In **Solution Explorer**:
 Right-click the project:
 
 
-Diary
+Diary_Project
 
 
 Select:
@@ -211,7 +211,7 @@ x64
 
 # Setting C++17
 
-Right-click the **Diary** project:
+Right-click the **Diary_Project** project:
 
 
 Properties
