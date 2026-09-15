@@ -1,0 +1,8 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Diary.vcxproj" Id="b3f4e558-e9f3-4f7b-95fd-641e2fdcbb6e" />
+  <Project Path="Diary_console/Diary_console.vcxproj" Id="75635dc0-e4ed-4d7e-b2a4-ee36f2270770" />
+</Solution>
