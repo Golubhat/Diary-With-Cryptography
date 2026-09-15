@@ -22,49 +22,6 @@ The project uses **C++17**.
 
 ---
 
-# Project Structure
-
-A typical source layout is:
-
-
-Diary/
-│
-├── src/
-│   ├── DiaryApp.h
-│   ├── DiaryApp.cpp
-│   │
-│   ├── MainFrame.h
-│   ├── MainFrame.cpp
-│   │
-│   ├── LoginFrame.h
-│   ├── LoginFrame.cpp
-│   │
-│   ├── RegistrationFrame.h
-│   ├── RegistrationFrame.cpp
-│   │
-│   ├── DashboardFrame.h
-│   ├── DashboardFrame.cpp
-│   │
-│   ├── UserManager.h
-│   ├── UserManager.cpp
-│   │
-│   ├── Encryption.h
-│   ├── Encryption.cpp
-│   │
-│   ├── BackupManager.h
-│   ├── BackupManager.cpp
-│   │
-│   └── Diary.manifest
-│
-├── Diary.sln
-├── Diary.vcxproj
-└── README_VISUAL_STUDIO.md
-
-
-The exact Visual Studio solution/project filenames may differ.
-
-
-
 # Installing wxWidgets
 
 Visual Studio needs access to a compiled wxWidgets installation.
